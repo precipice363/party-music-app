@@ -1,19 +1,25 @@
-require('dotenv').config(); 
+require('dotenv').config({
+  path: process.env.DOTENV_PATH || '.env'
+});
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-//require('dotenv').config();
+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.get('/api/healthz', (req, res) => {
+  res.status(200).send('OK');
+});
 
 //Connect to MongoDB ***
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-
+mongoose.connect(process.env.MONGODB_URI, {
+  retryWrites: true,
+  w: 'majority'
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error('MongoDB connection error:', err));
 //Routes
 app.get('/', (req, res) => res.send('API Running'));
 app.use('/api/songs', require('./routes/songs'));
